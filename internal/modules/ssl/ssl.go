@@ -42,17 +42,17 @@ var CADirectories = map[string]string{
 type Cert struct {
 	ID          string   `json:"ID"`
 	Name        string   `json:"Name"`
-	Domains     []string `json:"Domains"`     // SANs; first is CN
-	Source      string   `json:"Source"`      // "acme" | "upload"
-	Challenge   string   `json:"Challenge"`   // "http-01" | "dns-01"
-	CA          string   `json:"CA"`          // key in CADirectories
-	Email       string   `json:"Email"`       // ACME account email
-	KeyType     string   `json:"KeyType"`     // "ec256" | "ec384" | "rsa2048"
-	CFToken     string   `json:"CFToken"`     // Cloudflare token for dns-01
+	Domains     []string `json:"Domains"`   // SANs; first is CN
+	Source      string   `json:"Source"`    // "acme" | "upload"
+	Challenge   string   `json:"Challenge"` // "http-01" | "dns-01"
+	CA          string   `json:"CA"`        // key in CADirectories
+	Email       string   `json:"Email"`     // ACME account email
+	KeyType     string   `json:"KeyType"`   // "ec256" | "ec384" | "rsa2048"
+	CFToken     string   `json:"CFToken"`   // Cloudflare token for dns-01
 	AutoRenew   bool     `json:"AutoRenew"`
-	CertPEM     string   `json:"CertPEM"`     // full chain (upload or issued)
-	KeyPEM      string   `json:"KeyPEM"`      // private key
-	NotAfter    string   `json:"NotAfter"`    // informational
+	CertPEM     string   `json:"CertPEM"`  // full chain (upload or issued)
+	KeyPEM      string   `json:"KeyPEM"`   // private key
+	NotAfter    string   `json:"NotAfter"` // informational
 	NotBefore   string   `json:"NotBefore"`
 	Issuer      string   `json:"Issuer"`
 	LastError   string   `json:"LastError"`

@@ -9,6 +9,7 @@ import (
 	"github.com/icebays/al1add/internal/modules/ddns"
 	"github.com/icebays/al1add/internal/modules/docker"
 	"github.com/icebays/al1add/internal/modules/frp"
+	"github.com/icebays/al1add/internal/modules/ftp"
 	"github.com/icebays/al1add/internal/modules/ipdb"
 	"github.com/icebays/al1add/internal/modules/ipfilter"
 	"github.com/icebays/al1add/internal/modules/portforward"
@@ -21,7 +22,6 @@ import (
 	"github.com/icebays/al1add/internal/modules/webservice"
 	"github.com/icebays/al1add/internal/modules/webterminal"
 	"github.com/icebays/al1add/internal/modules/wol"
-	"github.com/icebays/al1add/internal/modules/ftp"
 )
 
 // RegisterAll registers modules in start order: shared services first, then the

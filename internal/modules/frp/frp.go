@@ -18,12 +18,12 @@ import (
 
 // Instance is one frp client or server.
 type Instance struct {
-	ID        string `json:"ID"`
-	Name      string `json:"Name"`
-	Enable    bool   `json:"Enable"`
-	Role      string `json:"Role"`      // frpc | frps
+	ID         string `json:"ID"`
+	Name       string `json:"Name"`
+	Enable     bool   `json:"Enable"`
+	Role       string `json:"Role"`       // frpc | frps
 	ConfigTOML string `json:"ConfigTOML"` // inline config written to a temp file
-	Remark    string `json:"Remark"`
+	Remark     string `json:"Remark"`
 }
 
 // Config of the module.

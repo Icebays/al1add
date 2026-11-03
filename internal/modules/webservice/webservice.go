@@ -21,11 +21,11 @@ import (
 
 // SubRule matches a domain (+optional path prefix) and serves it.
 type SubRule struct {
-	ID          string   `json:"ID"`
-	Enable      bool     `json:"Enable"`
-	FrontDomain string   `json:"FrontDomain"` // host or host/path; empty = match any
-	Type        string   `json:"Type"`        // proxy | redirect | redirect301 | static
-	Backend     string   `json:"Backend"`     // url for proxy/redirect; dir path or storage:ID for static
+	ID          string `json:"ID"`
+	Enable      bool   `json:"Enable"`
+	FrontDomain string `json:"FrontDomain"` // host or host/path; empty = match any
+	Type        string `json:"Type"`        // proxy | redirect | redirect301 | static
+	Backend     string `json:"Backend"`     // url for proxy/redirect; dir path or storage:ID for static
 	// proxy options
 	KeepClientIP     bool `json:"KeepClientIP"`     // set X-Forwarded-For
 	AppendClientIP   bool `json:"AppendClientIP"`   // append rather than replace

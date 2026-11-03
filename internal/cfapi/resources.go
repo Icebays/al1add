@@ -9,13 +9,13 @@ import (
 
 // Zone is a Cloudflare zone.
 type Zone struct {
-	ID     string   `json:"id"`
-	Name   string   `json:"name"`
-	Status string   `json:"status"`
-	Paused bool     `json:"paused"`
-	Type   string   `json:"type"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Status      string   `json:"status"`
+	Paused      bool     `json:"paused"`
+	Type        string   `json:"type"`
 	NameServers []string `json:"name_servers"`
-	Account struct {
+	Account     struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	} `json:"account"`
@@ -26,16 +26,16 @@ type Zone struct {
 
 // DNSRecord is a DNS record.
 type DNSRecord struct {
-	ID        string `json:"id,omitempty"`
-	ZoneID    string `json:"zone_id,omitempty"`
-	Type      string `json:"type"`
-	Name      string `json:"name"`
-	Content   string `json:"content"`
-	TTL       int    `json:"ttl"`
-	Proxied   bool   `json:"proxied"`
-	Priority  *int   `json:"priority,omitempty"`
-	Comment   string `json:"comment,omitempty"`
-	CreatedOn string `json:"created_on,omitempty"`
+	ID         string `json:"id,omitempty"`
+	ZoneID     string `json:"zone_id,omitempty"`
+	Type       string `json:"type"`
+	Name       string `json:"name"`
+	Content    string `json:"content"`
+	TTL        int    `json:"ttl"`
+	Proxied    bool   `json:"proxied"`
+	Priority   *int   `json:"priority,omitempty"`
+	Comment    string `json:"comment,omitempty"`
+	CreatedOn  string `json:"created_on,omitempty"`
 	ModifiedOn string `json:"modified_on,omitempty"`
 }
 

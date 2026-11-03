@@ -525,7 +525,9 @@ func (s *Server) handleAction(w http.ResponseWriter, r *http.Request) {
 }
 
 // RawResponse lets an action stream its own response (downloads).
-type RawResponse interface{ ServeHTTP(http.ResponseWriter, *http.Request) }
+type RawResponse interface {
+	ServeHTTP(http.ResponseWriter, *http.Request)
+}
 
 func (s *Server) handleLogs(w http.ResponseWriter, r *http.Request) {
 	n, _ := strconv.Atoi(r.URL.Query().Get("n"))

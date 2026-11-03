@@ -26,21 +26,21 @@ import (
 
 // Task is one DDNS task.
 type Task struct {
-	ID            string          `json:"ID"`
-	Name          string          `json:"Name"`
-	Enable        bool            `json:"Enable"`
-	Stack         string          `json:"Stack"` // ipv4 | ipv6
-	Creds         dnsprov.Creds   `json:"Creds"`
-	Domains       []string        `json:"Domains"`
-	TTL           int             `json:"TTL"`
-	Proxied       bool            `json:"Proxied"` // Cloudflare orange cloud
-	IntervalSec   int             `json:"IntervalSec"`
-	Source        string          `json:"Source"`        // interface | url
-	Interface     string          `json:"Interface"`     // when Source=interface
-	URLs          []string        `json:"URLs"`          // when Source=url
-	IPReg         string          `json:"IPReg"`         // optional regex to extract/select IP
-	Webhook       webhook.Config  `json:"Webhook"`
-	Remark        string          `json:"Remark"`
+	ID          string         `json:"ID"`
+	Name        string         `json:"Name"`
+	Enable      bool           `json:"Enable"`
+	Stack       string         `json:"Stack"` // ipv4 | ipv6
+	Creds       dnsprov.Creds  `json:"Creds"`
+	Domains     []string       `json:"Domains"`
+	TTL         int            `json:"TTL"`
+	Proxied     bool           `json:"Proxied"` // Cloudflare orange cloud
+	IntervalSec int            `json:"IntervalSec"`
+	Source      string         `json:"Source"`    // interface | url
+	Interface   string         `json:"Interface"` // when Source=interface
+	URLs        []string       `json:"URLs"`      // when Source=url
+	IPReg       string         `json:"IPReg"`     // optional regex to extract/select IP
+	Webhook     webhook.Config `json:"Webhook"`
+	Remark      string         `json:"Remark"`
 
 	// runtime (persisted for display)
 	LastIP     string `json:"LastIP"`

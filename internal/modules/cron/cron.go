@@ -20,14 +20,14 @@ import (
 
 // Job is one scheduled task.
 type Job struct {
-	ID       string         `json:"ID"`
-	Name     string         `json:"Name"`
-	Enable   bool           `json:"Enable"`
-	Cron     string         `json:"Cron"`    // 5-field expression
-	Type     string         `json:"Type"`    // command | webhook
-	Command  string         `json:"Command"` // when Type=command
-	Webhook  webhook.Config `json:"Webhook"` // when Type=webhook
-	Remark   string         `json:"Remark"`
+	ID      string         `json:"ID"`
+	Name    string         `json:"Name"`
+	Enable  bool           `json:"Enable"`
+	Cron    string         `json:"Cron"`    // 5-field expression
+	Type    string         `json:"Type"`    // command | webhook
+	Command string         `json:"Command"` // when Type=command
+	Webhook webhook.Config `json:"Webhook"` // when Type=webhook
+	Remark  string         `json:"Remark"`
 
 	LastRun    string `json:"LastRun"`
 	LastStatus string `json:"LastStatus"`

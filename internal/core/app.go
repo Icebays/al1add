@@ -25,12 +25,12 @@ const Version = "1.0.0"
 
 // Module is a configurable, restartable feature.
 type Module interface {
-	Name() string    // config/file name, e.g. "ddns"
-	Title() string   // display name
-	Config() any     // pointer to the live config struct
-	Reset()          // zero the config and apply defaults
-	Start() error    // apply config (called after Reset/Load)
-	Stop()           // release listeners/goroutines
+	Name() string  // config/file name, e.g. "ddns"
+	Title() string // display name
+	Config() any   // pointer to the live config struct
+	Reset()        // zero the config and apply defaults
+	Start() error  // apply config (called after Reset/Load)
+	Stop()         // release listeners/goroutines
 }
 
 // Normalizer fixes up a config after it is decoded (IDs, hashes...).

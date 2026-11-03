@@ -32,10 +32,10 @@ type Config struct {
 type ipRange struct{ from, to net.IP }
 
 type compiled struct {
-	white   bool
-	nets    []*net.IPNet
-	ranges  []ipRange
-	geo     map[string]bool
+	white    bool
+	nets     []*net.IPNet
+	ranges   []ipRange
+	geo      map[string]bool
 	matchAll bool
 }
 

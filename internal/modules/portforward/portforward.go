@@ -20,12 +20,12 @@ import (
 
 // Rule is one forwarding rule.
 type Rule struct {
-	ID        string `json:"ID"`
-	Name      string `json:"Name"`
-	Enable    bool   `json:"Enable"`
-	Protocol  string `json:"Protocol"` // tcp | udp | tcp+udp
-	ListenIP  string `json:"ListenIP"`
-	ListenPort int   `json:"ListenPort"`
+	ID         string `json:"ID"`
+	Name       string `json:"Name"`
+	Enable     bool   `json:"Enable"`
+	Protocol   string `json:"Protocol"` // tcp | udp | tcp+udp
+	ListenIP   string `json:"ListenIP"`
+	ListenPort int    `json:"ListenPort"`
 	TargetAddr string `json:"TargetAddr"` // host:port (variables allowed)
 	// access control
 	IPFilter  string `json:"IPFilter"`
@@ -40,10 +40,10 @@ type Config struct {
 }
 
 type ruleStat struct {
-	tcpConns  atomic.Int64
-	udpSess   atomic.Int64
-	rx        atomic.Int64
-	tx        atomic.Int64
+	tcpConns atomic.Int64
+	udpSess  atomic.Int64
+	rx       atomic.Int64
+	tx       atomic.Int64
 }
 
 type runner struct {

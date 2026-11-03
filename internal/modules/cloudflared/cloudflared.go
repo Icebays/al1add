@@ -18,14 +18,14 @@ import (
 
 // Tunnel is one cloudflared instance.
 type Tunnel struct {
-	ID       string `json:"ID"`
-	Name     string `json:"Name"`
-	Enable   bool   `json:"Enable"`
-	Mode     string `json:"Mode"`     // token | config
-	Token    string `json:"Token"`    // when Mode=token
-	ConfigFile string `json:"ConfigFile"` // when Mode=config
-	ExtraArgs []string `json:"ExtraArgs"`
-	Remark   string `json:"Remark"`
+	ID         string   `json:"ID"`
+	Name       string   `json:"Name"`
+	Enable     bool     `json:"Enable"`
+	Mode       string   `json:"Mode"`       // token | config
+	Token      string   `json:"Token"`      // when Mode=token
+	ConfigFile string   `json:"ConfigFile"` // when Mode=config
+	ExtraArgs  []string `json:"ExtraArgs"`
+	Remark     string   `json:"Remark"`
 }
 
 // Config of the module.

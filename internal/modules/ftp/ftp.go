@@ -133,8 +133,8 @@ type driver struct {
 
 func (d *driver) GetSettings() (*ftpserver.Settings, error) {
 	return &ftpserver.Settings{
-		Listener:        d.listener,
-		PublicHost:      d.cfg.PublicHost,
+		Listener:                 d.listener,
+		PublicHost:               d.cfg.PublicHost,
 		PassiveTransferPortRange: &ftpserver.PortRange{Start: d.cfg.PasvMinPort, End: d.cfg.PasvMaxPort},
 		DefaultTransferType:      ftpserver.TransferTypeBinary,
 	}, nil
