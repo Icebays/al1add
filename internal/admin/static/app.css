@@ -120,3 +120,48 @@ td.actions{text-align:right;white-space:nowrap}
   .topbar{display:flex}
   .content{padding:16px}
 }
+
+/* ---- icons ---- */
+.ic-svg{display:inline-block;vertical-align:-0.18em;flex:none}
+.btn .ic-svg{vertical-align:-0.18em;margin-right:2px}
+.nav a .ic{display:inline-flex;width:20px;justify-content:center;color:inherit}
+.nav a .ic .ic-svg{width:18px;height:18px}
+.nav a.active .ic{color:#fff}
+.brand .logo{display:inline-flex;color:var(--accent)}
+.brand .bt{flex:1}
+.card h3 .ic-svg,.tile .k .ic-svg{color:var(--accent);opacity:.9}
+.hamb .ic-svg{vertical-align:-0.25em}
+.modlink{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--fg)}
+.modlink:hover{color:var(--accent)}
+.modlink .ic-svg{color:var(--fg2)}
+
+/* ---- dashboard gauges ---- */
+.gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px}
+.tile.gauge{display:flex;align-items:center;gap:14px;padding:16px 18px}
+.gsvg{width:76px;height:76px;flex:none}
+.gbg{fill:none;stroke:var(--bg3);stroke-width:10}
+.gfg{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .5s ease, stroke .3s}
+.glabel .gval{font-size:24px;font-weight:700;line-height:1}
+.glabel .gk{color:var(--fg2);font-size:12.5px;margin-top:5px;display:flex;align-items:center;gap:5px}
+.tile.stat .k{color:var(--fg2);font-size:12.5px;display:flex;align-items:center;gap:6px}
+.tile.stat .val{font-size:24px;font-weight:700;margin-top:6px}
+.tile.stat .sub{color:var(--muted);font-size:12px;margin-top:4px}
+
+/* ---- chart ---- */
+#chart{width:100%;display:block}
+.legend{display:inline-flex;gap:14px;font-size:12px;font-weight:400;color:var(--fg2)}
+.legend .lg{display:inline-flex;align-items:center;gap:5px}
+.legend .lg i{width:12px;height:3px;border-radius:2px;display:inline-block}
+
+/* ---- misc polish ---- */
+.card{box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+.dot.orange{background:#f6821f;box-shadow:0 0 0 3px rgba(246,130,31,.15)}
+.dot.grey{background:var(--muted)}
+.card h3{align-items:center}
+
+/* gauge label fixes */
+.gauges{grid-template-columns:repeat(auto-fit,minmax(195px,1fr))}
+.glabel{min-width:0}
+.glabel .gk{white-space:nowrap}
+.tile.gauge .gsvg{width:70px;height:70px}

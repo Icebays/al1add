@@ -110,7 +110,7 @@ async function renderCloudflare(c) {
     const tb = tbl.querySelector("tbody");
     for (const rec of r.records) {
       const tr = el(`<tr><td>${esc(rec.type)}</td><td class="mono">${esc(rec.name)}</td><td class="mono">${esc(rec.content)}</td>
-        <td>${rec.ttl === 1 ? "auto" : rec.ttl}</td><td>${rec.proxied ? "🟠" : "⚪"}</td>
+        <td>${rec.ttl === 1 ? "auto" : rec.ttl}</td><td><span class="dot ${rec.proxied ? "orange" : "grey"}"></span></td>
         <td class="actions"><button class="btn sec sm" data-e>${t("edit")}</button> <button class="btn danger sm" data-d>✕</button></td></tr>`);
       tr.querySelector("[data-e]").onclick = () => recordModal(rec);
       tr.querySelector("[data-d]").onclick = async () => { if (!confirm(t("confirm_delete"))) return; try { await cfAction("record_delete", { AccountID: acc(), ZoneID: zone(), RecordID: rec.id }); toast(t("op_ok"), "ok"); loadRecords(); } catch (e) { toast(e.message, "err"); } };
@@ -225,10 +225,10 @@ async function renderDocker(c) {
   if (!st.enable) { c.appendChild(el(`<div class="card"><p class="muted">${t("disabled")} — ${t("config")} → Enable</p></div>`)); return renderModule(cSub(c), "docker"); }
   const bar = el(`<div class="card"><div class="inline">
     <span>${st.connected ? tag(true, t("running") + ` · ${st.running}/${st.containers}`) : tag(false, st.error || t("stopped"))}</span>
-    <button class="btn sec sm" id="rf" style="margin-left:auto">↻ ${t("refresh")}</button>
+    <button class="btn sec sm" id="rf" style="margin-left:auto">${icon("refresh", 14)} ${t("refresh")}</button>
   </div></div>`);
   c.appendChild(bar);
-  const cont = el(`<div class="card"><h3>🐳 Containers</h3><div id="ps" class="muted">${t("loading")}</div></div>`);
+  const cont = el(`<div class="card"><h3>${icon("docker", 16)} Containers</h3><div id="ps" class="muted">${t("loading")}</div></div>`);
   c.appendChild(cont);
   const loadPs = async () => {
     try {
@@ -240,9 +240,9 @@ async function renderDocker(c) {
         const run = ct.state === "running";
         const tr = el(`<tr><td>${esc(ct.name)}</td><td class="mono">${esc(ct.image)}</td><td>${tag(run, ct.status)}</td><td class="mono">${esc((ct.ports || []).join(", "))}</td>
           <td class="actions">
-            <button class="btn sec sm" data-a="logs">log</button>
-            <button class="btn sec sm" data-a="restart">⟳</button>
-            <button class="btn ${run ? "danger" : ""} sm" data-a="${run ? "stop" : "start"}">${run ? "停" : "啟"}</button>
+            <button class="btn sec sm" data-a="logs">${icon("logs", 13)}</button>
+            <button class="btn sec sm" data-a="restart">${icon("refresh", 13)}</button>
+            <button class="btn ${run ? "danger" : ""} sm" data-a="${run ? "stop" : "start"}">${run ? icon("stop", 13) : icon("play", 13)}</button>
           </td></tr>`);
         tr.querySelectorAll("[data-a]").forEach(b => b.onclick = async () => {
           const act = b.dataset.a;

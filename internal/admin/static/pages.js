@@ -2,35 +2,138 @@
 // Page renderers — loaded after app.js (shares its globals).
 
 // ---------------------------------------------------------------- dashboard
+const DASH = { cpu: [], mem: [], net: [], timer: null, lastPf: null };
+
+function toBytes(val, unit) {
+  const n = parseFloat(val) || 0;
+  const u = { B: 1, KB: 1024, MB: 1048576, GB: 1073741824, TB: 1099511627776 }[(unit || "B").toUpperCase()] || 1;
+  return n * u;
+}
+
 async function renderDashboard(c) {
   pageHead(c, t("dashboard"));
-  let info;
-  try { info = await api("/info"); S.info = info; } catch (e) { info = S.info; }
-  const v = info.vars || {};
-  const grid = el('<div class="grid"></div>');
-  const tiles = [
-    [t("version"), info.version, ""],
-    [t("sys_cpu"), (v.SystemCPUUsage || "0"), "%"],
-    [t("proc_mem"), (v.MemoryUsageVal || "0"), v.MemoryUsageUnit || "MB"],
-    [t("sys_mem"), (v.SystemMemoryUsageVal || "0"), (v.SystemMemoryUsageUnit || "") + " / " + (v.SystemTotalMemory || "")],
-    [t("goroutines"), v.TotalCoroutines || "0", ""],
-    [t("uptime"), v.Uptime || "", ""],
-    [t("modules"), (info.modules || []).length, ""],
-  ];
-  for (const [k, val, unit] of tiles)
-    grid.appendChild(el(`<div class="tile"><div class="k">${esc(k)}</div><div class="val">${esc(val)} <small>${esc(unit)}</small></div></div>`));
-  c.appendChild(grid);
+  if (DASH.timer) { clearInterval(DASH.timer); DASH.timer = null; }
 
-  // module status summary
-  const card = el(`<div class="card"><h3>${t("module_status")}</h3></div>`);
+  // gauges row
+  const gauges = el(`<div class="gauges">
+    ${gaugeCard("cpu", t("sys_cpu"), "cpu")}
+    ${gaugeCard("mem", t("sys_mem"), "mem")}
+    <div class="tile stat"><div class="k">${icon("activity", 15)} ${t("proc_mem")}</div><div class="val" id="st-pmem">—</div><div class="sub" id="st-pmem2"></div></div>
+    <div class="tile stat"><div class="k">${icon("layers", 15)} ${t("goroutines")}</div><div class="val" id="st-gor">—</div><div class="sub" id="st-ver"></div></div>
+    <div class="tile stat"><div class="k">${icon("clock", 15)} ${t("uptime")}</div><div class="val" id="st-up" style="font-size:19px">—</div><div class="sub" id="st-mods"></div></div>
+  </div>`);
+  c.appendChild(gauges);
+
+  // live chart
+  const chartCard = el(`<div class="card"><h3>${icon("activity", 16)} ${t("live_usage") || "即時使用率"}
+    <span class="legend" style="margin-left:auto">
+      <span class="lg"><i style="background:var(--accent)"></i>CPU</span>
+      <span class="lg"><i style="background:#22c55e"></i>${t("sys_mem")}</span>
+    </span></h3>
+    <canvas id="chart" height="180"></canvas></div>`);
+  c.appendChild(chartCard);
+
+  // module status
+  const card = el(`<div class="card"><h3>${icon("layers", 16)} ${t("module_status")}</h3></div>`);
   const tbl = el(`<table><thead><tr><th>${t("name")}</th><th>${t("status")}</th></tr></thead><tbody></tbody></table>`);
   const tb = tbl.querySelector("tbody");
-  for (const m of info.modules) {
-    const st = (info.status || {})[m.name];
-    tb.appendChild(el(`<tr><td><a>${esc(modTitle(m.name))}</a></td><td>${summarizeStatus(m.name, st)}</td></tr>`));
-    tb.lastChild.querySelector("a").onclick = () => go(customModules.includes(m.name) ? m.name : m.name);
-  }
   card.appendChild(tbl); c.appendChild(card);
+
+  const canvas = chartCard.querySelector("#chart");
+
+  async function tick() {
+    let info;
+    try { info = await api("/info"); S.info = info; } catch (e) { return; }
+    const v = info.vars || {};
+    const cpu = Math.max(0, Math.min(100, parseFloat(v.SystemCPUUsage) || 0));
+    const usedB = toBytes(v.SystemMemoryUsageVal, v.SystemMemoryUsageUnit);
+    const totalB = toBytes(v.SystemTotalMemoryVal, v.SystemTotalMemoryUnit);
+    const memPct = totalB ? Math.min(100, usedB / totalB * 100) : 0;
+    DASH.cpu.push(cpu); DASH.mem.push(memPct);
+    if (DASH.cpu.length > 60) { DASH.cpu.shift(); DASH.mem.shift(); }
+
+    setGauge(gauges, "cpu", cpu, cpu.toFixed(0) + "%", "var(--accent)");
+    setGauge(gauges, "mem", memPct, memPct.toFixed(0) + "%", "#22c55e");
+    gauges.querySelector("#st-pmem").textContent = (v.MemoryUsageVal || "0") + " " + (v.MemoryUsageUnit || "");
+    gauges.querySelector("#st-pmem2").textContent = (v.SystemMemoryUsage || "") + " / " + (v.SystemTotalMemory || "");
+    gauges.querySelector("#st-gor").textContent = v.TotalCoroutines || "0";
+    gauges.querySelector("#st-ver").textContent = "v" + info.version;
+    gauges.querySelector("#st-up").textContent = v.Uptime || "";
+    gauges.querySelector("#st-mods").textContent = (info.modules || []).length + " " + t("modules");
+
+    drawChart(canvas, [
+      { data: DASH.cpu, color: getCss("--accent") },
+      { data: DASH.mem, color: "#22c55e" },
+    ]);
+
+    // module table
+    tb.innerHTML = "";
+    for (const m of info.modules) {
+      const st = (info.status || {})[m.name];
+      const tr = el(`<tr><td><a class="modlink">${icon(m.name, 15)} <span>${esc(modTitle(m.name))}</span></a></td><td>${summarizeStatus(m.name, st)}</td></tr>`);
+      tr.querySelector("a").onclick = () => go(m.name);
+      tb.appendChild(tr);
+    }
+  }
+  await tick();
+  DASH.timer = setInterval(() => { if (S.route === "dashboard") tick(); else { clearInterval(DASH.timer); DASH.timer = null; } }, 2500);
+}
+
+function gaugeCard(id, label, ic) {
+  return `<div class="tile gauge">
+    <svg viewBox="0 0 120 120" class="gsvg">
+      <circle cx="60" cy="60" r="50" class="gbg"/>
+      <circle cx="60" cy="60" r="50" class="gfg" id="g-${id}" transform="rotate(-90 60 60)"/>
+    </svg>
+    <div class="glabel"><div class="gval" id="gv-${id}">—</div><div class="gk">${icon(ic, 14)} ${esc(label)}</div></div>
+  </div>`;
+}
+function setGauge(root, id, pct, text, color) {
+  const circ = 2 * Math.PI * 50;
+  const fg = root.querySelector("#g-" + id);
+  fg.style.strokeDasharray = circ;
+  fg.style.strokeDashoffset = circ * (1 - pct / 100);
+  fg.style.stroke = color;
+  root.querySelector("#gv-" + id).textContent = text;
+}
+function getCss(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#3b82f6"; }
+
+function drawChart(canvas, series) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || canvas.parentElement.clientWidth - 36;
+  const h = 180;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 34, r: 8, t: 10, b: 18 };
+  const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+  const grid = getCss("--line") || "#2a3340", fg2 = getCss("--fg2") || "#9aa7b4";
+  ctx.strokeStyle = grid; ctx.fillStyle = fg2; ctx.lineWidth = 1; ctx.font = "11px system-ui";
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + gh * i / 4;
+    ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.fillText((100 - i * 25) + "%", 4, y + 4);
+  }
+  const N = 60;
+  for (const s of series) {
+    if (!s.data.length) continue;
+    ctx.beginPath();
+    s.data.forEach((val, i) => {
+      const idx = i + (N - s.data.length);
+      const x = pad.l + gw * idx / (N - 1);
+      const y = pad.t + gh * (1 - Math.max(0, Math.min(100, val)) / 100);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.stroke();
+    // area fill
+    const last = s.data.length - 1;
+    const lastIdx = last + (N - s.data.length);
+    ctx.lineTo(pad.l + gw * lastIdx / (N - 1), pad.t + gh);
+    ctx.lineTo(pad.l + gw * (N - s.data.length) / (N - 1), pad.t + gh);
+    ctx.closePath();
+    ctx.globalAlpha = .08; ctx.fillStyle = s.color; ctx.fill(); ctx.globalAlpha = 1;
+  }
 }
 
 const customModules = ["cloudflare", "docker", "webterminal"];
@@ -58,7 +161,7 @@ const MODULE_ACTIONS = {
 
 async function renderModule(c, name) {
   pageHead(c, modTitle(name), t("type_help"));
-  const statusCard = el(`<div class="card"><h3>${t("status")} <button class="btn sec sm" style="margin-left:auto" id="rf">↻ ${t("refresh")}</button></h3><div id="stbody" class="muted">${t("loading")}</div></div>`);
+  const statusCard = el(`<div class="card"><h3>${t("status")} <button class="btn sec sm" style="margin-left:auto" id="rf">${icon("refresh",14)} ${t("refresh")}</button></h3><div id="stbody" class="muted">${t("loading")}</div></div>`);
   c.appendChild(statusCard);
   const loadStatus = async () => {
     try {
@@ -160,7 +263,7 @@ async function renderLogs(c) {
   pageHead(c, t("logs"));
   const bar = el(`<div class="card"><div class="inline">
     <select id="mod" style="max-width:240px"><option value="">${t("all_modules")}</option></select>
-    <button class="btn sec sm" id="rf">↻ ${t("refresh")}</button>
+    <button class="btn sec sm" id="rf">${icon("refresh",14)} ${t("refresh")}</button>
     <label class="chk" style="margin:0"><input type="checkbox" id="auto" checked> auto</label>
   </div><div class="sp"></div><div class="logbox" id="box"></div></div>`);
   c.appendChild(bar);

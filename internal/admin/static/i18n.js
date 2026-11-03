@@ -18,7 +18,7 @@ const I18N = {
     uptime: "運行時間", version: "版本", data_dir: "資料目錄", modules: "模組數",
     // dashboard
     sys_cpu: "系統 CPU", sys_mem: "系統記憶體", proc_mem: "程式記憶體", goroutines: "協程數",
-    module_status: "模組狀態", value: "數值",
+    module_status: "模組狀態", value: "數值", live_usage: "即時使用率",
     // settings
     admin_user: "管理員用戶名", http_port: "HTTP 埠", https_port: "HTTPS 埠 (0=關閉)",
     listen_ip: "監聽 IP (空=全部)", safe_entrance: "安全入口路徑", allow_internet: "允許外網訪問後台",
@@ -61,7 +61,7 @@ const I18N = {
     name: "Name", type: "Type", remark: "Remark", type_help: "This module is configured as JSON; saving applies it immediately.",
     uptime: "Uptime", version: "Version", data_dir: "Data dir", modules: "Modules",
     sys_cpu: "System CPU", sys_mem: "System memory", proc_mem: "Process memory", goroutines: "Goroutines",
-    module_status: "Module status", value: "Value",
+    module_status: "Module status", value: "Value", live_usage: "Live usage",
     admin_user: "Admin username", http_port: "HTTP port", https_port: "HTTPS port (0=off)",
     listen_ip: "Listen IP (empty=all)", safe_entrance: "Safe entrance path", allow_internet: "Allow Internet access to panel",
     admin_ipfilter: "Panel IP filter (filter ID)", session_hours: "Session hours", panel_title: "Panel title",
@@ -107,9 +107,4 @@ const MOD_TITLES = {
   waf:          {zh:"Web 防火牆", en:"WAF (Coraza)"},
 };
 
-const MOD_ICONS = {
-  webservice:"🌐", portforward:"🔀", ddns:"📡", stun:"🕳️", wol:"⏰",
-  cloudflared:"☁️", frp:"🚇", webdav:"📂", ftpserver:"📥", storage:"💾",
-  cloudflare:"🔶", docker:"🐳", cron:"⏱️", webterminal:"💻",
-  ipfilter:"🛡️", ipdb:"🌍", secgroup:"👥", ssl:"🔒", waf:"🧱",
-};
+// Module icon keys map 1:1 to module names in icons.js, so icon(name) is used directly.

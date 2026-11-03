@@ -86,7 +86,7 @@ function renderLogin() {
   app.innerHTML = "";
   const form = el(`<form>
     <div class="inline" style="justify-content:space-between">
-      <h1>🧰 ${t("login_title")}</h1>
+      <h1><span class="logo">${icon("logo", 22)}</span> ${t("login_title")}</h1>
       <span class="langsw"></span>
     </div>
     <p class="sub">${t("login_sub")}</p>
@@ -122,12 +122,12 @@ function langSwitch() {
 
 // ---------------------------------------------------------------- shell
 const GROUPS = [
-  { key: "grp_overview", items: [["dashboard", "📊", () => t("dashboard")]] },
+  { key: "grp_overview", items: [["dashboard", "dashboard", () => t("dashboard")]] },
   { key: "grp_network", mods: ["webservice", "portforward", "ddns", "stun", "wol", "ssl"] },
   { key: "grp_tunnel", mods: ["cloudflared", "frp"] },
   { key: "grp_files", mods: ["storage", "webdav", "ftpserver"] },
   { key: "grp_manage", mods: ["cloudflare", "docker", "cron", "webterminal", "ipfilter", "ipdb", "secgroup", "waf"] },
-  { key: "grp_system", items: [["logs", "📜", () => t("logs")], ["globalvars", "🔤", () => t("globalvars")], ["settings", "⚙️", () => t("settings")], ["backup", "💿", () => t("backup")]] },
+  { key: "grp_system", items: [["logs", "logs", () => t("logs")], ["globalvars", "globalvars", () => t("globalvars")], ["settings", "settings", () => t("settings")], ["backup", "backup", () => t("backup")]] },
 ];
 
 function render() {
@@ -139,11 +139,11 @@ function render() {
 
   // sidebar
   const sb = el(`<aside class="sidebar ${S.sidebarOpen ? "open" : ""}">
-    <div class="brand">🧰 ${esc(S.info.title || "Al1add")} <span class="v">v${esc(S.info.version)}</span></div>
+    <div class="brand"><span class="logo">${icon("logo", 22)}</span> <span class="bt">${esc(S.info.title || "Al1add")}</span> <span class="v">v${esc(S.info.version)}</span></div>
     <nav class="nav"></nav>
     <div style="padding:12px;border-top:1px solid var(--line)" class="inline">
       <span class="langsw"></span>
-      <button class="btn sec sm" id="logout" style="margin-left:auto">${t("logout")}</button>
+      <button class="btn sec sm" id="logout" style="margin-left:auto">${icon("logout", 15)} ${t("logout")}</button>
     </div>
   </aside>`);
   const nav = sb.querySelector(".nav");
@@ -151,11 +151,11 @@ function render() {
   for (const g of GROUPS) {
     const items = [];
     if (g.items) for (const [r, ic, lbl] of g.items) items.push([r, ic, lbl()]);
-    if (g.mods) for (const name of g.mods) if (avail.has(name)) items.push([name, MOD_ICONS[name] || "▪", modTitle(name)]);
+    if (g.mods) for (const name of g.mods) if (avail.has(name)) items.push([name, name, modTitle(name)]);
     if (!items.length) continue;
     nav.appendChild(el(`<div class="group">${t(g.key)}</div>`));
     for (const [r, ic, lbl] of items) {
-      const a = el(`<a class="${S.route === r ? "active" : ""}"><span class="ic">${ic}</span><span>${esc(lbl)}</span></a>`);
+      const a = el(`<a class="${S.route === r ? "active" : ""}"><span class="ic">${icon(ic)}</span><span>${esc(lbl)}</span></a>`);
       a.onclick = () => go(r);
       nav.appendChild(a);
     }
@@ -165,7 +165,7 @@ function render() {
 
   // main
   const main = el(`<div class="main">
-    <div class="topbar"><button class="hamb">☰</button><b>${esc(S.info.title || "Al1add")}</b></div>
+    <div class="topbar"><button class="hamb">${icon("menu", 20)}</button><b>${esc(S.info.title || "Al1add")}</b></div>
     <div class="content" id="content"></div>
   </div>`);
   main.querySelector(".hamb").onclick = () => { S.sidebarOpen = !S.sidebarOpen; render(); };
