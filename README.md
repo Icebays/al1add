@@ -36,7 +36,17 @@ curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | RU
 curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SERVICE=1 bash
 ```
 
-可用環境變量 / overrides: `INSTALL_DIR`、`DATA_DIR`、`BRANCH`、`PORT`、`RUN`、`SERVICE`。
+**公網訪問 / Public access** — 面板預設已聽 `0.0.0.0` 並容許任何來源（有登入保護）；公網入唔到通常係**防火牆未開 port**。加 `PUBLIC=1` 自動開返主機防火牆（ufw / firewalld / iptables）：
+The panel already listens on `0.0.0.0` and allows any source (login-protected); if the Internet can't reach it, the **host firewall port is closed**. `PUBLIC=1` opens it automatically:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SERVICE=1 PUBLIC=1 bash
+```
+
+> ⚠️ 若喺雲端主機（阿里雲 / AWS / GCP 等）或路由器後面，仲要去**安全組 / 端口轉發**放行 TCP `18890`。
+> On a cloud VPS or behind a router, also allow TCP `18890` in the **security group / port-forwarding**.
+
+可用環境變量 / overrides: `INSTALL_DIR`、`DATA_DIR`、`BRANCH`、`PORT`、`RUN`、`SERVICE`、`PUBLIC`。
 
 > ⚠️ 透過管道執行網上腳本前，建議先睇一眼內容：
 > Review any piped script before running it: [`install.sh`](install.sh).
