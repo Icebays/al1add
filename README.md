@@ -12,6 +12,37 @@ be exported / imported as a backup.
 
 ---
 
+## 🚀 Quick Start / 快速開始
+
+一行指令由 GitHub 拉取、自動編譯並啟動（需要 `git` 同 Go ≥ 1.24）。
+One command pulls from GitHub, builds and runs it (requires `git` and Go ≥ 1.24).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | bash
+```
+
+啟動後打開 `http://<本機>:18890/`；首個 `admin` 密碼會印喺日誌度。
+Then open `http://<host>:18890/`; the initial `admin` password is printed to the log.
+
+安裝完即刻前景運行 / build then run immediately:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | RUN=1 bash
+```
+
+安裝做 systemd 開機自啟服務（Linux，需 root）/ install as an auto-start systemd service:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SERVICE=1 bash
+```
+
+可用環境變量 / overrides: `INSTALL_DIR`、`DATA_DIR`、`BRANCH`、`PORT`、`RUN`、`SERVICE`。
+
+> ⚠️ 透過管道執行網上腳本前，建議先睇一眼內容：
+> Review any piped script before running it: [`install.sh`](install.sh).
+
+---
+
 ## 繁體中文
 
 ### 功能模組
