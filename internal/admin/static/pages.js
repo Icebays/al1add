@@ -315,18 +315,18 @@ async function renderSettings(c) {
       <label class="f"><span>${t("admin_ipfilter")}</span><input id="AdminIPFilter" type="text"></label>
       <label class="f"><span>${t("session_hours")}</span><input id="SessionHours" type="number"></label>
     </div>
-    <label class="chk"><input type="checkbox" id="AllowInternet"> ${t("allow_internet")}</label>
+    <label class="chk"><input type="checkbox" id="LANOnly"> ${t("lan_only")}</label>
     <div class="btn-row" style="margin-top:12px"><button class="btn" id="save">${t("save")}</button></div>
   </div>`);
   const set = (id, val) => { const e = f.querySelector("#" + id); if (e.type === "checkbox") e.checked = !!val; else e.value = val == null ? "" : val; };
-  ["Title", "AdminUser", "Port", "HTTPSPort", "ListenIP", "SafeEntrance", "AdminIPFilter", "SessionHours", "AllowInternet"].forEach(k => set(k, b[k]));
+  ["Title", "AdminUser", "Port", "HTTPSPort", "ListenIP", "SafeEntrance", "AdminIPFilter", "SessionHours", "LANOnly"].forEach(k => set(k, b[k]));
   f.querySelector("#save").onclick = async () => {
     const out = {
       Title: f.querySelector("#Title").value, AdminUser: f.querySelector("#AdminUser").value,
       Port: +f.querySelector("#Port").value, HTTPSPort: +f.querySelector("#HTTPSPort").value,
       ListenIP: f.querySelector("#ListenIP").value, SafeEntrance: f.querySelector("#SafeEntrance").value,
       AdminIPFilter: f.querySelector("#AdminIPFilter").value, SessionHours: +f.querySelector("#SessionHours").value,
-      AllowInternet: f.querySelector("#AllowInternet").checked,
+      LANOnly: f.querySelector("#LANOnly").checked,
     };
     try { const r = await api("/base", { method: "PUT", json: out }); toast(t("saved"), "ok"); if (r.restart) toast(t("restart_note"), ""); }
     catch (e) { toast(e.message, "err"); }

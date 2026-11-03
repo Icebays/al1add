@@ -49,7 +49,20 @@ func HostIP(addr string) net.IP {
 // RequestIP returns the TCP peer IP of a request.
 func RequestIP(r *http.Request) net.IP { return HostIP(r.RemoteAddr) }
 
-// IsLAN reports loopback/private/link-local addresses.
+// cgnat is the 100.64.0.0/10 shared address space (used by Tailscale and
+// carrier-grade NAT), treated as "LAN" for admin access checks.
+var cgnat = &net.IPNet{IP: net.IPv4(100, 64, 0, 0).To4(), Mask: net.CIDRMask(10, 32)}
+
+// IsLAN reports loopback / private / link-local / CGNAT addresses.
 func IsLAN(ip net.IP) bool {
-	return ip != nil && (ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast())
+	if ip == nil {
+		return false
+	}
+	if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() {
+		return true
+	}
+	if v4 := ip.To4(); v4 != nil && cgnat.Contains(v4) {
+		return true
+	}
+	return false
 }

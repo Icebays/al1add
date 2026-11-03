@@ -41,7 +41,7 @@ type BaseConfig struct {
 	Port          int    `json:"Port"`
 	HTTPSPort     int    `json:"HTTPSPort"`
 	SafeEntrance  string `json:"SafeEntrance"`
-	AllowInternet bool   `json:"AllowInternet"`
+	LANOnly       bool   `json:"LANOnly"`
 	AdminIPFilter string `json:"AdminIPFilter"`
 	SessionHours  int    `json:"SessionHours"`
 	SessionSecret string `json:"SessionSecret"`
@@ -208,12 +208,12 @@ func (s *Server) handler() http.Handler {
 		cfg := s.cfg
 		s.mu.RUnlock()
 		ip := core.RequestIP(r)
-		if !cfg.AllowInternet && !core.IsLAN(ip) {
-			http.Error(w, "forbidden", http.StatusForbidden)
+		if cfg.LANOnly && !core.IsLAN(ip) {
+			http.Error(w, "forbidden: panel is restricted to LAN (disable 僅限區域網 / LAN-only in settings)", http.StatusForbidden)
 			return
 		}
 		if cfg.AdminIPFilter != "" && s.app.IPFilter != nil && !s.app.IPFilter.Allow(cfg.AdminIPFilter, ip) {
-			http.Error(w, "forbidden", http.StatusForbidden)
+			http.Error(w, "forbidden: blocked by the panel IP filter", http.StatusForbidden)
 			return
 		}
 		w.Header().Set("X-Frame-Options", "SAMEORIGIN")

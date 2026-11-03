@@ -21,7 +21,7 @@ const I18N = {
     module_status: "模組狀態", value: "數值", live_usage: "即時使用率",
     // settings
     admin_user: "管理員用戶名", http_port: "HTTP 埠", https_port: "HTTPS 埠 (0=關閉)",
-    listen_ip: "監聽 IP (空=全部)", safe_entrance: "安全入口路徑", allow_internet: "允許外網訪問後台",
+    listen_ip: "監聽 IP (空=全部)", safe_entrance: "安全入口路徑", lan_only: "僅限區域網訪問後台",
     admin_ipfilter: "後台 IP 過濾 (過濾器 ID)", session_hours: "登入有效時數", panel_title: "面板標題",
     change_pass: "修改密碼", old_pass: "目前密碼", new_pass: "新密碼", pass_changed: "密碼已更新",
     restart_note: "更改埠或監聽 IP 後面板會自動重啟，請用新地址重新連線。",
@@ -63,7 +63,7 @@ const I18N = {
     sys_cpu: "System CPU", sys_mem: "System memory", proc_mem: "Process memory", goroutines: "Goroutines",
     module_status: "Module status", value: "Value", live_usage: "Live usage",
     admin_user: "Admin username", http_port: "HTTP port", https_port: "HTTPS port (0=off)",
-    listen_ip: "Listen IP (empty=all)", safe_entrance: "Safe entrance path", allow_internet: "Allow Internet access to panel",
+    listen_ip: "Listen IP (empty=all)", safe_entrance: "Safe entrance path", lan_only: "Restrict panel to LAN/VPN only",
     admin_ipfilter: "Panel IP filter (filter ID)", session_hours: "Session hours", panel_title: "Panel title",
     change_pass: "Change password", old_pass: "Current password", new_pass: "New password", pass_changed: "Password updated",
     restart_note: "Changing the port or listen IP restarts the panel; reconnect using the new address.",
