@@ -93,7 +93,7 @@ func New(app *core.App, passphrase string) (*Server, string, error) {
 func (s *Server) normalize() {
 	c := &s.cfg
 	if c.Port <= 0 {
-		c.Port = 16601
+		c.Port = 18890
 	}
 	if c.SessionHours <= 0 {
 		c.SessionHours = 72

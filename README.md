@@ -47,7 +47,7 @@ go build -o al1add .
 ./al1add -cd ./data
 ```
 
-首次啟動會喺日誌印出 `admin` 嘅隨機密碼。預設喺 `http://<本機>:16601` 開面板。
+首次啟動會喺日誌印出 `admin` 嘅隨機密碼。預設喺 `http://<本機>:18890` 開面板。
 
 常用參數：
 
@@ -101,7 +101,7 @@ Plus dashboard, logs, global variables, settings and backup/restore.
 
 ```bash
 go build -o al1add .
-./al1add -cd ./data          # panel at http://<host>:16601
+./al1add -cd ./data          # panel at http://<host>:18890
 ```
 
 The initial random `admin` password is printed to the log on first start.
