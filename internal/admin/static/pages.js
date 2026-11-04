@@ -191,7 +191,18 @@ function showLogs(name) {
 
 async function renderModule(c, name, embedded) {
   let headActs = null;
-  if (!embedded) {
+  if (!embedded && isMobileUI()) {
+    // Mobile: actions live in the app bar; "add" becomes a floating button.
+    const acts = (HEAD_ACTIONS[name] || []).map(ha => ({
+      icon: ha.icon || "play", title: tr(ha.label),
+      onClick: async () => { try { const r = await api(`/m/${name}/action/${ha.action}`, { method: "POST", json: {} }); toast(t("op_ok") + (r && r.path ? " · " + r.path : ""), "ok"); render(); } catch (e) { toast(e.message, "err"); } },
+    }));
+    acts.push({ icon: "logs", title: t("run_logs"), onClick: () => showLogs(name) });
+    acts.push({ icon: "refresh", title: t("refresh"), onClick: () => render() });
+    setBar({ title: modTitle(name), actions: acts });
+    headActs = el(`<div class="fabwrap"></div>`);
+    c.appendChild(headActs);
+  } else if (!embedded) {
     const isList = !!(SCHEMA[name] && SCHEMA[name].list);
     const head = el(`<div class="phead"><span class="ptab">${icon(name, 16)} ${esc(modTitle(name))} · ${esc(isList ? t("rule_list") : t("config"))}</span>
       <span class="btn-row hacts"></span><span class="sp-auto"></span><span class="btn-row tools"></span></div>`);

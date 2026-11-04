@@ -45,6 +45,8 @@ const I18N = {
     loading: "載入中…", none: "（無）", op_ok: "操作成功", confirm: "確定",
     on_txt: "啟用", off_txt: "禁用", run_logs: "運行日誌", rule_list: "規則列表", item_n: "第{n}條",
     empty_rules: "暫時未有規則，點擊上方「添加」建立", detail_status: "運行狀態", days_left: "剩 {n} 天",
+    m_home: "首頁", m_apps: "功能", m_me: "我的", m_lang: "語言", m_theme: "主題", m_dark: "深色", m_light: "淺色",
+    m_desktop: "切換到電腦版", m_mobile: "切換到手機版",
   },
   en: {
     app_title: "Al1add Control Panel",
@@ -85,6 +87,8 @@ const I18N = {
     loading: "Loading…", none: "(none)", op_ok: "Done", confirm: "OK",
     on_txt: "ON", off_txt: "OFF", run_logs: "Logs", rule_list: "Rules", item_n: "#{n}",
     empty_rules: "No rules yet — click “Add” above to create one", detail_status: "Runtime status", days_left: "{n} days left",
+    m_home: "Home", m_apps: "Apps", m_me: "Me", m_lang: "Language", m_theme: "Theme", m_dark: "Dark", m_light: "Light",
+    m_desktop: "Switch to desktop view", m_mobile: "Switch to mobile view",
   }
 };
 

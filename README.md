@@ -48,6 +48,14 @@ curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SE
 
 可用環境變量 / overrides: `INSTALL_DIR`、`DATA_DIR`、`BRANCH`、`PORT`、`RUN`、`SERVICE`、`PUBLIC`。
 
+### 📱 手機版 / Mobile app
+
+用手機打開面板、或者由主畫面開（Web App），會**自動**轉用手機介面：頂部 App 列、底部分頁（首頁 / 功能 / 日誌 / 我的）、功能圖標格、浮動「＋」新增、底部彈出式表單。可喺「我的 → 切換到電腦版」或電腦版側欄嘅手機圖標手動切換。
+Phones (and the installed web app) automatically get a mobile UI with an app bar, bottom tabs, a launcher grid, a floating "+" button and bottom-sheet forms; switch views manually under **Me → Switch to desktop view**.
+
+- **iPhone / iPad**：Safari → 分享 → 「加入主畫面」/ Share → *Add to Home Screen*
+- **Android**：Chrome → 「安裝應用程式」/ *Install app*（Android 需要 HTTPS：喺「系統設定」開 HTTPS 埠並喺「SSL 證書」配置證書 / requires HTTPS — enable the HTTPS port and a certificate）
+
 > ⚠️ 透過管道執行網上腳本前，建議先睇一眼內容：
 > Review any piped script before running it: [`install.sh`](install.sh).
 

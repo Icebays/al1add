@@ -76,6 +76,26 @@ function applyTheme() { document.documentElement.dataset.theme = localStorage.ge
 function toggleTheme() { const n = (localStorage.getItem("al1add_theme") || "light") === "light" ? "dark" : "light"; localStorage.setItem("al1add_theme", n); applyTheme(); }
 applyTheme();
 
+// ---------------------------------------------------------------- UI mode (mobile / desktop)
+// Auto: phones, narrow screens and home-screen web apps on touch devices get the
+// mobile UI. The user can override it; choosing the auto value resets to auto.
+const MQ_NARROW = window.matchMedia("(max-width: 820px)");
+function autoMobile() {
+  return MQ_NARROW.matches ||
+    /Android|iPhone|iPod|Mobile|HarmonyOS|Windows Phone/i.test(navigator.userAgent) ||
+    (window.matchMedia("(display-mode: standalone)").matches && window.matchMedia("(pointer: coarse)").matches) ||
+    window.navigator.standalone === true;
+}
+function uiPref() { try { return localStorage.getItem("al1add_ui") || "auto"; } catch (e) { return "auto"; } }
+function setUIPref(v) { const auto = autoMobile() ? "mobile" : "desktop"; try { localStorage.setItem("al1add_ui", v === auto ? "auto" : v); } catch (e) {} }
+function isMobileUI() { const p = uiPref(); return p === "mobile" ? true : p === "desktop" ? false : autoMobile(); }
+MQ_NARROW.addEventListener("change", () => { if (uiPref() === "auto" && S.info) render(); });
+
+// Installable web app: register a (non-caching) service worker on secure origins.
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
 // ---------------------------------------------------------------- boot
 async function boot() {
   try {
@@ -146,6 +166,9 @@ const GROUPS = [
 function render() {
   if (!S.info) { renderLogin(); return; }
   document.documentElement.lang = LANG === "zh" ? "zh-Hant" : "en";
+  const mobile = isMobileUI();
+  document.documentElement.classList.toggle("m", mobile);
+  if (mobile) return renderMobile();
   const app = document.getElementById("app");
   app.innerHTML = "";
   const shell = el('<div class="shell"></div>');
@@ -156,7 +179,8 @@ function render() {
     <nav class="nav"></nav>
     <div class="side-foot">
       <span class="langsw"></span>
-      <button class="pill-btn" id="theme" title="theme">${document.documentElement.dataset.theme === "dark" ? "☀" : "☾"}</button>
+      <button class="pill-btn" id="theme" title="${esc(t("m_theme"))}">${icon(document.documentElement.dataset.theme === "dark" ? "sun" : "moon", 14)}</button>
+      <button class="pill-btn" id="tomobile" title="${esc(t("m_mobile"))}">${icon("mobile", 14)}</button>
       <button class="btn sec sm" id="logout" style="margin-left:auto">${icon("logout", 14)} ${t("logout")}</button>
     </div>
   </aside>`);
@@ -176,6 +200,7 @@ function render() {
   }
   sb.querySelector(".langsw").appendChild(langSwitch());
   sb.querySelector("#theme").onclick = () => { toggleTheme(); render(); };
+  sb.querySelector("#tomobile").onclick = () => { setUIPref("mobile"); render(); };
   sb.querySelector("#logout").onclick = async () => { await api("/logout", { method: "POST" }); S.info = null; renderLogin(); };
 
   // main
@@ -192,12 +217,113 @@ function render() {
 }
 
 function pageHead(c, title, desc) {
-  c.appendChild(el(`<h2 class="page">${esc(title)}</h2>`));
+  if (isMobileUI()) setBar({ title });
+  else c.appendChild(el(`<h2 class="page">${esc(title)}</h2>`));
   if (desc) c.appendChild(el(`<p class="page-desc">${esc(desc)}</p>`));
+}
+
+// ---------------------------------------------------------------- mobile shell
+const M_TABS = [["dashboard", "home", "m_home"], ["apps", "apps", "m_apps"], ["logs", "logs", "logs"], ["me", "user", "m_me"]];
+function mobileTab(r) {
+  if (r === "dashboard" || r === "logs") return r;
+  if (["me", "settings", "backup", "globalvars"].includes(r)) return "me";
+  return "apps";
+}
+function backTarget(r) {
+  if (["dashboard", "apps", "logs", "me"].includes(r)) return null;
+  if (["settings", "backup", "globalvars"].includes(r)) return "me";
+  return "apps";
+}
+function routeTitle(r) {
+  if (r === "apps") return t("m_apps");
+  if (r === "me") return t("m_me");
+  if (["dashboard", "logs", "settings", "backup", "globalvars"].includes(r)) return t(r);
+  return modTitle(r);
+}
+
+function renderMobile() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  const sh = el(`<div class="mshell">
+    <header class="mbar"><button class="mback hidden" aria-label="back">${icon("back", 22)}</button><div class="mtitle"></div><div class="mbar-acts"></div></header>
+    <main class="mcontent" id="content"></main>
+    <nav class="mtabs"></nav></div>`);
+  const nav = sh.querySelector(".mtabs");
+  const active = mobileTab(S.route);
+  for (const [r, ic, k] of M_TABS) {
+    const a = el(`<a class="${active === r ? "active" : ""}">${icon(ic, 22)}<span>${esc(t(k))}</span></a>`);
+    a.onclick = () => { if (S.route !== r) go(r); };
+    nav.appendChild(a);
+  }
+  app.appendChild(sh);
+  setBar({ title: routeTitle(S.route), back: backTarget(S.route), actions: [] });
+  renderRoute(sh.querySelector("#content"));
+}
+
+// setBar updates the mobile app bar: {title, back: route|null, actions: [{icon, title, onClick}]}.
+function setBar(o) {
+  const bar = document.querySelector(".mbar");
+  if (!bar) return;
+  if (o.title !== undefined) bar.querySelector(".mtitle").textContent = o.title;
+  if (o.back !== undefined) {
+    const b = bar.querySelector(".mback");
+    b.classList.toggle("hidden", !o.back);
+    b.onclick = () => go(o.back);
+  }
+  if (o.actions) {
+    const acts = bar.querySelector(".mbar-acts"); acts.innerHTML = "";
+    for (const a of o.actions) {
+      const b = el(`<button class="mact" title="${esc(a.title || "")}" aria-label="${esc(a.title || "")}">${icon(a.icon, 21)}</button>`);
+      b.onclick = a.onClick; acts.appendChild(b);
+    }
+  }
+}
+
+// "功能" — every module as an app-launcher grid.
+function renderApps(c) {
+  pageHead(c, t("m_apps"));
+  const avail = new Set(S.info.modules.map(m => m.name));
+  for (const g of GROUPS) {
+    const mods = (g.mods || []).filter(n => avail.has(n));
+    if (!mods.length) continue;
+    c.appendChild(el(`<div class="m-sec">${esc(t(g.key))}</div>`));
+    const grid = el(`<div class="appgrid" data-g="${g.key}"></div>`);
+    for (const n of mods) {
+      const a = el(`<a class="app"><span class="app-ic">${icon(n, 24)}</span><span class="app-name">${esc(modTitle(n))}</span></a>`);
+      a.onclick = () => go(n);
+      grid.appendChild(a);
+    }
+    c.appendChild(grid);
+  }
+}
+
+// "我的" — account, system pages, language, theme, desktop switch, logout.
+function renderMe(c) {
+  pageHead(c, t("m_me"));
+  const dark = document.documentElement.dataset.theme === "dark";
+  c.appendChild(el(`<div class="card me-head"><span class="logo">${icon("logo", 28)}</span>
+    <div><b>${esc((S.session && S.session.user) || "admin")}</b><div class="muted">${esc(S.info.title || "Al1add")} · v${esc(S.info.version)}</div></div></div>`));
+  const list = el(`<div class="card cells"></div>`);
+  const cell = (ic, label, right, on) => {
+    const x = el(`<a class="cell">${icon(ic, 20)}<span class="cl">${esc(label)}</span><span class="cr">${esc(right || "")}</span>${icon("chevron", 16)}</a>`);
+    x.onclick = on; list.appendChild(x);
+  };
+  cell("settings", t("settings"), "", () => go("settings"));
+  cell("backup", t("backup"), "", () => go("backup"));
+  cell("globalvars", t("globalvars"), "", () => go("globalvars"));
+  cell("language", t("m_lang"), LANG === "zh" ? "繁體中文" : "English", () => setLang(LANG === "zh" ? "en" : "zh"));
+  cell(dark ? "sun" : "moon", t("m_theme"), dark ? t("m_dark") : t("m_light"), () => { toggleTheme(); render(); });
+  cell("monitor", t("m_desktop"), "", () => { setUIPref("desktop"); render(); });
+  c.appendChild(list);
+  const lo = el(`<button class="btn danger mblock">${icon("logout", 16)} ${t("logout")}</button>`);
+  lo.onclick = async () => { await api("/logout", { method: "POST" }); S.info = null; renderLogin(); };
+  c.appendChild(lo);
 }
 
 function renderRoute(c) {
   const r = S.route;
+  if (r === "apps") return renderApps(c);
+  if (r === "me") return renderMe(c);
   if (r === "dashboard") return renderDashboard(c);
   if (r === "logs") return renderLogs(c);
   if (r === "globalvars") return renderVars(c);
