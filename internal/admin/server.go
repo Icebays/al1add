@@ -124,6 +124,25 @@ func (s *Server) ResetPassword(user, pass string) error {
 	return s.app.Store.Save("base", &cfg)
 }
 
+// SetPort changes the panel HTTP port (used by the CLI installer).
+func (s *Server) SetPort(port int) error {
+	if port <= 0 || port > 65535 {
+		return fmt.Errorf("invalid port %d", port)
+	}
+	s.mu.Lock()
+	s.cfg.Port = port
+	cfg := s.cfg
+	s.mu.Unlock()
+	return s.app.Store.Save("base", &cfg)
+}
+
+// Port returns the configured panel HTTP port.
+func (s *Server) Port() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.cfg.Port
+}
+
 // Start opens the panel listeners.
 func (s *Server) Start() error {
 	s.mu.RLock()

@@ -24,6 +24,8 @@ func main() {
 	passphrase := flag.String("passphrase", os.Getenv("AL1ADD_PASSPHRASE"), "optional passphrase protecting master.key (env AL1ADD_PASSPHRASE)")
 	resetUser := flag.String("resetuser", "", "reset the admin username (use with -resetpass)")
 	resetPass := flag.String("resetpass", "", "reset the admin password and exit")
+	setPort := flag.Int("setport", 0, "set the panel HTTP port and exit")
+	getPort := flag.Bool("getport", false, "print the panel HTTP port and exit")
 	showVersion := flag.Bool("version", false, "print version and exit")
 	flag.Parse()
 
@@ -43,11 +45,28 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if *resetPass != "" {
-		if err := panel.ResetPassword(*resetUser, *resetPass); err != nil {
-			log.Fatal(err)
+	// One-shot maintenance commands (used by install.sh). If they created the
+	// config for the first time, still reveal the generated admin password.
+	if *resetPass != "" || *setPort != 0 || *getPort {
+		if *resetPass != "" {
+			if err := panel.ResetPassword(*resetUser, *resetPass); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("admin password updated")
+			initial = ""
 		}
-		fmt.Println("admin password updated")
+		if *setPort != 0 {
+			if err := panel.SetPort(*setPort); err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("panel port set to", *setPort)
+		}
+		if *getPort {
+			fmt.Println(panel.Port())
+		}
+		if initial != "" {
+			fmt.Fprintf(os.Stderr, "initial admin user = admin, password = %s\n", initial)
+		}
 		return
 	}
 

@@ -14,39 +14,50 @@ be exported / imported as a backup.
 
 ## 🚀 Quick Start / 快速開始
 
-一行指令由 GitHub 拉取、自動編譯並啟動（需要 `git` 同 Go ≥ 1.24）。
-One command pulls from GitHub, builds and runs it (requires `git` and Go ≥ 1.24).
+一行指令打開**互動式安裝管理選單**（會自動安裝缺少嘅 Go / git）：
+One command opens the **interactive installer & manager** (installs Go / git automatically if missing):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | bash
+bash <(curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh)
 ```
 
-啟動後打開 `http://<本機>:18890/`；首個 `admin` 密碼會印喺日誌度。
-Then open `http://<host>:18890/`; the initial `admin` password is printed to the log.
+（或 / or：`curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | bash`）
 
-安裝完即刻前景運行 / build then run immediately:
+```
+   1) 安裝 / 更新          Install / Update
+   2) 安裝為系統服務       Install as service (auto-start on boot)
+   3) 開放公網訪問         Open firewall for public access
+   4) 啟動 / 停止 / 重啟    Start / Stop / Restart
+   5) 查看狀態 / 日誌       Status & logs
+   6) 重設管理員密碼       Reset admin password
+   7) 更改面板埠           Change panel port
+   8) 備份資料             Backup data
+   9) 卸載                 Uninstall
+   0) 退出                 Exit
+```
+
+**第一次用 / First time:** 揀 `1` 安裝 → `2` 裝做系統服務（會顯示首次登入密碼）→ 想公網用就揀 `3`。
+之後打開 `http://<本機IP>:18890/`。Pick `1` → `2` (shows the first-login password) → `3` for public access, then open `http://<host>:18890/`.
+
+> ⚠️ 雲端主機（阿里雲 / 騰訊雲 / AWS 等）或喺路由器後面：仲要喺**安全組 / 端口轉發**放行面板埠（預設 TCP `18890`）。
+> On a cloud VPS or behind a router, also allow the panel port (default TCP `18890`) in the **security group / port forwarding**.
+
+**直接執行某個功能 / Run one action directly:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | RUN=1 bash
+curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | bash -s -- update     # 更新 update
+# install | update | service | public | start | stop | restart | status | logs | resetpass | setport | backup | uninstall
 ```
 
-安裝做 systemd 開機自啟服務（Linux，需 root）/ install as an auto-start systemd service:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SERVICE=1 bash
-```
-
-**公網訪問 / Public access** — 面板預設已聽 `0.0.0.0` 並容許任何來源（有登入保護）；公網入唔到通常係**防火牆未開 port**。加 `PUBLIC=1` 自動開返主機防火牆（ufw / firewalld / iptables）：
-The panel already listens on `0.0.0.0` and allows any source (login-protected); if the Internet can't reach it, the **host firewall port is closed**. `PUBLIC=1` opens it automatically:
+**全自動（無互動，適合腳本）/ Unattended:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Icebays/al1add/main/install.sh | SERVICE=1 PUBLIC=1 bash
 ```
 
-> ⚠️ 若喺雲端主機（阿里雲 / AWS / GCP 等）或路由器後面，仲要去**安全組 / 端口轉發**放行 TCP `18890`。
-> On a cloud VPS or behind a router, also allow TCP `18890` in the **security group / port-forwarding**.
+環境變量 / environment: `INSTALL_DIR`（預設 `~/al1add`）、`DATA_DIR`、`BRANCH`、`PORT`、`RUN=1`、`SERVICE=1`、`PUBLIC=1`。
 
-可用環境變量 / overrides: `INSTALL_DIR`、`DATA_DIR`、`BRANCH`、`PORT`、`RUN`、`SERVICE`、`PUBLIC`。
+> 透過管道執行網上腳本前，建議先睇一眼 [`install.sh`](install.sh) 內容。Review [`install.sh`](install.sh) before piping it to bash.
 
 ### 📱 手機版 / Mobile app
 
@@ -105,6 +116,7 @@ go build -o al1add .
 | `-cd <dir>` | 資料目錄（預設：執行檔旁 `data/`） |
 | `-passphrase <pw>` | 用密語保護 `master.key`（亦可用環境變量 `AL1ADD_PASSPHRASE`） |
 | `-resetuser` / `-resetpass` | 重設管理員帳號 / 密碼後退出 |
+| `-setport <埠>` / `-getport` | 設定 / 顯示面板埠後退出 |
 | `-version` | 印出版本 |
 
 ### 加密存檔格式 `.alcf`
@@ -154,7 +166,7 @@ go build -o al1add .
 ```
 
 The initial random `admin` password is printed to the log on first start.
-See `-passphrase`, `-resetuser`/`-resetpass`, `-version`.
+See `-passphrase`, `-resetuser`/`-resetpass`, `-setport`/`-getport`, `-version`.
 
 ### Encrypted store `.alcf`
 
