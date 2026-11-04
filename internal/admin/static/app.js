@@ -12,6 +12,8 @@ const BASE = (function () {
 let LANG = localStorage.getItem("al1add_lang") || "zh";
 function t(k) { return (I18N[LANG] && I18N[LANG][k]) || (I18N.zh[k]) || k; }
 function modTitle(name) { const m = MOD_TITLES[name]; return m ? (m[LANG] || m.zh) : name; }
+// tr localizes a {zh,en} label object (or returns a plain string as-is).
+function tr(o) { if (o == null) return ""; if (typeof o === "object") return o[LANG] || o.zh || o.en || ""; return String(o); }
 function setLang(l) { LANG = l; localStorage.setItem("al1add_lang", l); render(); }
 
 // ---------------------------------------------------------------- api
@@ -44,7 +46,7 @@ function toast(msg, kind) {
   if (!box) { box = el('<div class="toast"></div>'); document.body.appendChild(box); }
   const d = el(`<div class="${kind || ""}">${esc(msg)}</div>`);
   box.appendChild(d);
-  setTimeout(() => d.remove(), 4200);
+  setTimeout(() => d.remove(), 2600);
 }
 function bytes(n) {
   n = Number(n) || 0; const u = ["B", "KB", "MB", "GB", "TB"]; let i = 0;
@@ -54,14 +56,25 @@ function bytes(n) {
 function tag(on, label) { return `<span class="tag ${on ? "on" : "off"}">${esc(label || (on ? t("running") : t("stopped")))}</span>`; }
 function go(route) { location.hash = "#" + route; }
 
-// modal
-function modal(title, bodyNode, onClose) {
-  const ov = el(`<div class="overlay"><div class="modal"><h3>${esc(title)}</h3></div></div>`);
-  ov.querySelector(".modal").appendChild(bodyNode);
-  ov.addEventListener("click", e => { if (e.target === ov) { ov.remove(); onClose && onClose(); } });
+// modal: centered title + close button, body, optional footer node.
+function modal(title, bodyNode, onClose, footNode) {
+  const ov = el(`<div class="overlay"><div class="modal">
+    <div class="mhead"><h3>${esc(title)}</h3><button class="mclose" aria-label="close">×</button></div>
+    <div class="mbody"></div></div></div>`);
+  const m = ov.querySelector(".modal");
+  m.querySelector(".mbody").appendChild(bodyNode);
+  if (footNode) { const f = el('<div class="mfoot"></div>'); f.appendChild(footNode); m.appendChild(f); }
+  const close = () => { ov.remove(); onClose && onClose(); };
+  m.querySelector(".mclose").onclick = close;
+  ov.addEventListener("mousedown", e => { if (e.target === ov) close(); });
   document.body.appendChild(ov);
   return ov;
 }
+
+// theme (light default, like classic admin panels)
+function applyTheme() { document.documentElement.dataset.theme = localStorage.getItem("al1add_theme") || "light"; }
+function toggleTheme() { const n = (localStorage.getItem("al1add_theme") || "light") === "light" ? "dark" : "light"; localStorage.setItem("al1add_theme", n); applyTheme(); }
+applyTheme();
 
 // ---------------------------------------------------------------- boot
 async function boot() {
@@ -141,9 +154,10 @@ function render() {
   const sb = el(`<aside class="sidebar ${S.sidebarOpen ? "open" : ""}">
     <div class="brand"><span class="logo">${icon("logo", 22)}</span> <span class="bt">${esc(S.info.title || "Al1add")}</span> <span class="v">v${esc(S.info.version)}</span></div>
     <nav class="nav"></nav>
-    <div style="padding:12px;border-top:1px solid var(--line)" class="inline">
+    <div class="side-foot">
       <span class="langsw"></span>
-      <button class="btn sec sm" id="logout" style="margin-left:auto">${icon("logout", 15)} ${t("logout")}</button>
+      <button class="pill-btn" id="theme" title="theme">${document.documentElement.dataset.theme === "dark" ? "☀" : "☾"}</button>
+      <button class="btn sec sm" id="logout" style="margin-left:auto">${icon("logout", 14)} ${t("logout")}</button>
     </div>
   </aside>`);
   const nav = sb.querySelector(".nav");
@@ -161,6 +175,7 @@ function render() {
     }
   }
   sb.querySelector(".langsw").appendChild(langSwitch());
+  sb.querySelector("#theme").onclick = () => { toggleTheme(); render(); };
   sb.querySelector("#logout").onclick = async () => { await api("/logout", { method: "POST" }); S.info = null; renderLogin(); };
 
   // main

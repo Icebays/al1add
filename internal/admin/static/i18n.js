@@ -10,7 +10,7 @@ const I18N = {
     grp_files: "檔案服務", grp_manage: "管理 / 工具", grp_system: "系統",
     dashboard: "儀表板", logs: "日誌", globalvars: "全局變量", settings: "系統設定", backup: "備份還原",
     save: "儲存", saving: "儲存中…", saved: "已儲存", cancel: "取消", close: "關閉",
-    add: "新增", edit: "編輯", delete: "刪除", confirm_delete: "確定刪除？",
+    add: "添加", edit: "編輯", delete: "刪除", confirm_delete: "確定刪除？",
     enable: "啟用", disabled: "停用", running: "運行中", stopped: "已停止", error: "錯誤",
     refresh: "重新整理", run: "執行", test: "測試", verify: "驗證", apply: "套用",
     status: "狀態", config: "設定", raw_config: "原始設定 (JSON)", actions: "操作",
@@ -43,6 +43,8 @@ const I18N = {
     // logs
     all_modules: "全部模組",
     loading: "載入中…", none: "（無）", op_ok: "操作成功", confirm: "確定",
+    on_txt: "啟用", off_txt: "禁用", run_logs: "運行日誌", rule_list: "規則列表", item_n: "第{n}條",
+    empty_rules: "暫時未有規則，點擊上方「添加」建立", detail_status: "運行狀態", days_left: "剩 {n} 天",
   },
   en: {
     app_title: "Al1add Control Panel",
@@ -81,6 +83,8 @@ const I18N = {
     term_disabled: "Web terminal is disabled; enable it in its settings.", term_connect: "Connect", term_disconnect: "Disconnect",
     all_modules: "All modules",
     loading: "Loading…", none: "(none)", op_ok: "Done", confirm: "OK",
+    on_txt: "ON", off_txt: "OFF", run_logs: "Logs", rule_list: "Rules", item_n: "#{n}",
+    empty_rules: "No rules yet — click “Add” above to create one", detail_status: "Runtime status", days_left: "{n} days left",
   }
 };
 

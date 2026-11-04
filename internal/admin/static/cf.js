@@ -222,7 +222,7 @@ async function renderCloudflare(c) {
 async function renderDocker(c) {
   pageHead(c, modTitle("docker"));
   const st = await api("/m/docker/status").catch(e => ({ error: e.message }));
-  if (!st.enable) { c.appendChild(el(`<div class="card"><p class="muted">${t("disabled")} — ${t("config")} → Enable</p></div>`)); return renderModule(cSub(c), "docker"); }
+  if (!st.enable) { c.appendChild(el(`<div class="card"><p class="muted">${t("disabled")} — ${t("config")} → Enable</p></div>`)); return renderModule(cSub(c), "docker", true); }
   const bar = el(`<div class="card"><div class="inline">
     <span>${st.connected ? tag(true, t("running") + ` · ${st.running}/${st.containers}`) : tag(false, st.error || t("stopped"))}</span>
     <button class="btn sec sm" id="rf" style="margin-left:auto">${icon("refresh", 14)} ${t("refresh")}</button>
@@ -256,7 +256,7 @@ async function renderDocker(c) {
   };
   bar.querySelector("#rf").onclick = loadPs; loadPs();
   // config at the bottom
-  renderModule(cSub(c), "docker");
+  renderModule(cSub(c), "docker", true);
 }
 // helper: append a sub-container so renderModule can add its own cards
 function cSub(c) { const d = el("<div></div>"); c.appendChild(d); return d; }
@@ -267,7 +267,7 @@ async function renderTerminal(c) {
   const st = await api("/m/webterminal/status").catch(() => ({}));
   if (!st.enable) {
     c.appendChild(el(`<div class="card"><p class="muted">${t("term_disabled")}</p></div>`));
-    return renderModule(cSub(c), "webterminal");
+    return renderModule(cSub(c), "webterminal", true);
   }
   const card = el(`<div class="card">
     <div class="btn-row"><button class="btn" id="conn">${t("term_connect")}</button><button class="btn sec" id="disc" disabled>${t("term_disconnect")}</button><span class="fg2 mono">${esc(st.shell || "")}</span></div>
@@ -294,5 +294,5 @@ async function renderTerminal(c) {
   input.addEventListener("keydown", e => {
     if (e.key === "Enter" && ws) { ws.send(JSON.stringify({ type: "input", data: input.value + "\n" })); input.value = ""; }
   });
-  renderModule(cSub(c), "webterminal");
+  renderModule(cSub(c), "webterminal", true);
 }

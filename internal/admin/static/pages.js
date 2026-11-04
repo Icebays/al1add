@@ -153,68 +153,93 @@ function summarizeStatus(name, st) {
   return counts.length ? `<span class="fg2">${esc(counts.join(" · "))}</span>` : `<span class="muted">—</span>`;
 }
 
-// ---------------------------------------------------------------- generic module (JSON config + status + actions)
-const MODULE_ACTIONS = {
-  ddns: [["update", "ID"]], ssl: [["issue", "ID"]], wol: [["wake", "ID"], ["probe", "ID"]],
-  cron: [["run", "ID"]], ipdb: [["download", null]],
+// ---------------------------------------------------------------- generic module page
+// Per-row action buttons shown in the module's list (schema-driven GUI).
+const ROW_ACTIONS = {
+  ddns: [{ action: "update", label: { zh: "更新", en: "Update" }, icon: "refresh" }],
+  ssl: [{ action: "issue", label: { zh: "簽發", en: "Issue" }, icon: "ssl" }],
+  wol: [{ action: "wake", label: { zh: "喚醒", en: "Wake" }, icon: "wol" }, { action: "probe", label: { zh: "探測", en: "Probe" } }],
+  cron: [{ action: "run", label: { zh: "執行", en: "Run" }, icon: "play" }],
+};
+// Module-level action buttons (no per-row target) shown in the status header.
+const HEAD_ACTIONS = {
+  ipdb: [{ action: "download", label: { zh: "下載資料庫", en: "Download DB" }, icon: "backup" }],
 };
 
-async function renderModule(c, name) {
-  pageHead(c, modTitle(name), t("type_help"));
-  const statusCard = el(`<div class="card"><h3>${t("status")} <button class="btn sec sm" style="margin-left:auto" id="rf">${icon("refresh",14)} ${t("refresh")}</button></h3><div id="stbody" class="muted">${t("loading")}</div></div>`);
-  c.appendChild(statusCard);
-  const loadStatus = async () => {
-    try {
-      const st = await api(`/m/${name}/status`);
-      statusCard.querySelector("#stbody").innerHTML = "";
-      statusCard.querySelector("#stbody").appendChild(renderStatusTable(name, st));
-    } catch (e) { statusCard.querySelector("#stbody").textContent = e.message; }
-  };
-  statusCard.querySelector("#rf").onclick = loadStatus;
-  loadStatus();
+// Index status rows by ID so rule rows can show live state (running, traffic…).
+function indexStatus(st) {
+  const m = {};
+  if (!st || typeof st !== "object") return m;
+  for (const k of Object.keys(st)) if (Array.isArray(st[k])) for (const r of st[k]) if (r && r.ID) m[r.ID] = r;
+  return m;
+}
 
-  // JSON config editor
-  const editCard = el(`<div class="card"><h3>${t("raw_config")}</h3>
-    <textarea class="code" id="cfg" spellcheck="false">${t("loading")}</textarea>
-    <div class="err-text hidden" id="ce"></div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn" id="save">${t("save")}</button>
-      <button class="btn sec" id="reload">${t("refresh")}</button>
-      <span id="acts" class="btn-row"></span>
-    </div>
-  </div>`);
-  c.appendChild(editCard);
-  const ta = editCard.querySelector("#cfg");
-  const loadCfg = async () => {
-    const data = await api(`/m/${name}/config`);
-    ta.value = JSON.stringify(data, null, 2);
+function showLogs(name) {
+  const box = el(`<div class="logbox">${t("loading")}</div>`);
+  const load = async () => {
+    try {
+      const logs = await api("/logs?n=300&module=" + encodeURIComponent(name));
+      box.innerHTML = logs.length ? logs.map(e => `<div><span class="log-t">${esc((e.time || "").replace("T", " ").slice(0, 19))}</span> <span class="log-${esc(e.level)}">${esc(e.msg)}</span></div>`).join("") : `<span class="log-t">${t("none")}</span>`;
+      box.scrollTop = box.scrollHeight;
+    } catch (e) { box.textContent = e.message; }
   };
-  loadCfg().catch(e => ta.value = e.message);
-  editCard.querySelector("#reload").onclick = () => loadCfg();
-  editCard.querySelector("#save").onclick = async () => {
-    const err = editCard.querySelector("#ce"); err.classList.add("hidden");
+  const foot = el(`<div class="btn-row"><button class="btn sec">${icon("refresh", 14)} ${t("refresh")}</button></div>`);
+  foot.querySelector("button").onclick = load;
+  modal(modTitle(name) + " · " + t("run_logs"), box, null, foot);
+  load();
+}
+
+async function renderModule(c, name, embedded) {
+  let headActs = null;
+  if (!embedded) {
+    const isList = !!(SCHEMA[name] && SCHEMA[name].list);
+    const head = el(`<div class="phead"><span class="ptab">${icon(name, 16)} ${esc(modTitle(name))} · ${esc(isList ? t("rule_list") : t("config"))}</span>
+      <span class="btn-row hacts"></span><span class="sp-auto"></span><span class="btn-row tools"></span></div>`);
+    c.appendChild(head);
+    headActs = head.querySelector(".hacts");
+    const tools = head.querySelector(".tools");
+    for (const ha of (HEAD_ACTIONS[name] || [])) {
+      const b = el(`<button class="btn plain">${ha.icon ? icon(ha.icon, 13) : ""} ${esc(tr(ha.label))}</button>`);
+      b.onclick = async () => { b.disabled = true; try { const r = await api(`/m/${name}/action/${ha.action}`, { method: "POST", json: {} }); toast(t("op_ok") + (r && r.path ? " · " + r.path : ""), "ok"); render(); } catch (e) { toast(e.message, "err"); } b.disabled = false; };
+      headActs.appendChild(b);
+    }
+    const lb = el(`<button class="btn sec">${icon("logs", 14)} ${t("run_logs")}</button>`); lb.onclick = () => showLogs(name);
+    const rb = el(`<button class="btn sec">${icon("refresh", 14)} ${t("refresh")}</button>`); rb.onclick = () => render();
+    tools.appendChild(lb); tools.appendChild(rb);
+  }
+
+  let st = null, cfg;
+  try {
+    [st, cfg] = await Promise.all([api(`/m/${name}/status`).catch(() => null), api(`/m/${name}/config`)]);
+  } catch (e) { c.appendChild(el(`<div class="card err-text">${esc(e.message)}</div>`)); return; }
+
+  const handled = await renderModuleForm(c, name, cfg, () => render(), { rowActions: ROW_ACTIONS[name], headActs, statusByID: indexStatus(st) });
+
+  // Detailed runtime status (open by default for modules without a list).
+  if (!embedded && st) {
+    const sc = SCHEMA[name];
+    const det = el(`<details class="card" ${!(sc && sc.list) ? "open" : ""}><summary>${icon("activity", 14)} ${t("detail_status")}</summary><div></div></details>`);
+    det.querySelector("div").appendChild(renderStatusTable(name, st));
+    c.appendChild(det);
+  }
+
+  // Advanced raw-JSON editor (collapsed).
+  const adv = el(`<details class="card adv"><summary>${icon("globalvars", 14)} ${t("raw_config")}</summary>
+    <textarea class="code" id="cfg" spellcheck="false"></textarea>
+    <div class="err-text hidden" id="ce"></div>
+    <div class="btn-row" style="margin-top:12px"><button class="btn" id="save">${t("save")}</button></div></details>`);
+  c.appendChild(adv);
+  const ta = adv.querySelector("#cfg");
+  const fill = () => ta.value = JSON.stringify(cfg, null, 2);
+  adv.querySelector("summary").addEventListener("click", () => setTimeout(fill, 0), { once: true });
+  adv.querySelector("#save").onclick = async () => {
+    const err = adv.querySelector("#ce"); err.classList.add("hidden");
     let parsed;
     try { parsed = JSON.parse(ta.value); } catch (e) { err.textContent = "JSON: " + e.message; err.classList.remove("hidden"); return; }
-    const btn = editCard.querySelector("#save"); btn.disabled = true; btn.textContent = t("saving");
-    try {
-      await api(`/m/${name}/config`, { method: "PUT", json: parsed });
-      toast(t("saved"), "ok"); loadStatus();
-    } catch (e) { err.textContent = e.message; err.classList.remove("hidden"); }
-    btn.disabled = false; btn.textContent = t("save");
+    try { await api(`/m/${name}/config`, { method: "PUT", json: parsed }); toast(t("saved"), "ok"); render(); }
+    catch (e) { err.textContent = e.message; err.classList.remove("hidden"); }
   };
-
-  // id-targeted actions
-  const acts = editCard.querySelector("#acts");
-  for (const [action, arg] of (MODULE_ACTIONS[name] || [])) {
-    const b = el(`<button class="btn sec sm">${esc(action)}</button>`);
-    b.onclick = async () => {
-      let body = {};
-      if (arg) { const id = prompt(`${action} — ${arg}:`); if (id == null) return; body[arg] = id; }
-      try { const r = await api(`/m/${name}/action/${action}`, { method: "POST", json: body }); toast(t("op_ok") + " · " + JSON.stringify(r), "ok"); loadStatus(); }
-      catch (e) { toast(e.message, "err"); }
-    };
-    acts.appendChild(b);
-  }
+  if (!handled) { adv.open = true; fill(); }
 }
 
 function renderStatusTable(name, st) {
